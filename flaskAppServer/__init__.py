@@ -6,6 +6,8 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__,instance_relative_config=True)
     app.config.from_mapping(SECRET_KEY='dev')
+    # app.config['UPLOAD_FOLDER'] = IMG_UPLOAD_FOLDER
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -20,9 +22,10 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from flaskAppServer import query, ingest
+    from flaskAppServer import export_api, auth
     logging.basicConfig(level=logging.DEBUG)
     # apply the blueprints to the app
-    app.register_blueprint(query.bp)
-    app.register_blueprint(ingest.bp)
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(export_api.bp)
+
     return app

@@ -4,7 +4,10 @@ build:
 	docker build -t $(app_name) .
 
 run:
-	docker run --name $(app_name) --detach -p 8003:8003 $(app_name)
+	docker run --name $(app_name) \
+		--detach -p 8003:8003 $(app_name) \
+		-v /home/ubuntu/files:/files \
+		-v /home/ubuntu/images:/images
 
 kill:
 	docker stop $(app_name)
