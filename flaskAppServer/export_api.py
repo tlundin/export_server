@@ -1,4 +1,6 @@
 from flask import Blueprint
+from flask import Flask, request, Response
+from flask import send_from_directory
 import logging
 
 bp = Blueprint('export_api',__name__,url_prefix='/')
@@ -9,8 +11,8 @@ def greeting():
     logging.info('GET /greeting')
     return 'Hello this message is coming from query Blueprint.'
 
-IMG_UPLOAD_FOLDER = '/home/ec2-user/flask/export/images'
-FILE_UPLOAD_FOLDER = '/home/ec2-user/flask/export/files'
+IMG_UPLOAD_FOLDER = '/flaskAppServer/flaskAppServer/images'
+FILE_UPLOAD_FOLDER = '/flaskAppServer/flaskAppServer/files'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'json'}
 
 
