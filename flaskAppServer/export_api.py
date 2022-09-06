@@ -30,9 +30,11 @@ def upload_img():
                     file.save(IMG_UPLOAD_FOLDER + "/" + filename)
                 else:
                     file.save(FILE_UPLOAD_FOLDER + "/" + filename)
-                return Response("OK")
             else:
                 return Response('filename {} is not allowed'.format(filename), 403)
+        return Response("OK")
+    return Response('method not allowed',404)
+
 
 
 def allowed_file(filename):
