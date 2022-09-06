@@ -1,8 +1,8 @@
 app_name = flask-prod-app
-host_img_folder=/home/ubuntu/flask-prod-app/flaskAppServer/images
-container_img_folder=/flaskAppServer/flaskAppServer/images
-host_file_folder=/home/ubuntu/flask-prod-app/flaskAppServer/files
-container_file_folder=/flaskAppServer/flaskAppServer/files
+host_img_folder=/home/ubuntu/images
+container_img_folder=/flaskAppServer/images
+host_file_folder=/home/ubuntu/files
+container_file_folder=/flaskAppServer/files
 
 build:
 	docker build -t $(app_name) .

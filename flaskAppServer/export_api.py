@@ -11,14 +11,12 @@ def greeting():
     logging.info('GET /greeting')
     return 'Hello this message is coming from query Blueprint.'
 
-IMG_UPLOAD_FOLDER = '/flaskAppServer/flaskAppServer/images'
-FILE_UPLOAD_FOLDER = '/flaskAppServer/flaskAppServer/files'
+IMG_UPLOAD_FOLDER = '/flaskAppServer/images'
+FILE_UPLOAD_FOLDER = '/flaskAppServer/files'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'json'}
-
 
 @bp.route('/upload', methods=['POST'])
 def upload_img():
-    logging.info('GET /upload')
     if request.method == 'POST':
         for filename in request.files:
             if allowed_file(filename):
@@ -26,6 +24,7 @@ def upload_img():
                 print("name", file.filename)
                 print("type", file.content_type)
                 print("size", file.content_length)
+                logging.info("File: {} Size: {}".format(file.filename,file.content_length));
                 if file.content_type.startswith("image"):
                     file.save(IMG_UPLOAD_FOLDER + "/" + filename)
                 else:
@@ -34,8 +33,6 @@ def upload_img():
                 return Response('filename {} is not allowed'.format(filename), 403)
         return Response("OK")
     return Response('method not allowed',404)
-
-
 
 def allowed_file(filename):
     return '.' in filename and \
