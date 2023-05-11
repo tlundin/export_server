@@ -23,3 +23,7 @@ Name     | Version
 Flask    | v1.1.2
 Gunicorn | v20.0.4
 
+## Before use
+Please update the Makefile to include correct values for
+host_img_folder=/home/ubuntu/images
+host_file_folder=/home/ubuntu/files
