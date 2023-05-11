@@ -23,9 +23,11 @@ def create_app(test_config=None):
         pass
 
     from flaskAppServer import export_api, auth
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S')
     # apply the blueprints to the app
     app.register_blueprint(auth.bp)
     app.register_blueprint(export_api.bp)
-
     return app

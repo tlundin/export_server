@@ -6,4 +6,4 @@
 # Its light on server resources, and fairly speedy.
 
 # Here we will be spinning up multiple threads with multiple worker processess(-w) and perform a binding.
-gunicorn flaskAppServer:"create_app()" -w 2 --threads 2 -b 0.0.0.0:8003
+gunicorn flaskAppServer:"create_app()" -w 2 --threads 2 -b 0.0.0.0:8003 --log-config log.conf
