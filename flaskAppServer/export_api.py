@@ -3,6 +3,8 @@ import datetime
 import logging
 import os
 from random import randrange
+import random
+import time
 
 bp = Blueprint('export_api',__name__,url_prefix='/')
 
@@ -31,7 +33,8 @@ def update_position():
             "easting": 674000.0,  # Example SWEREF 99 TM Easting
             "northing": 6580000.0 # Example SWEREF 99 TM Northing
         },
-        "timestamp": "2025-03-27T10:30:00Z" # ISO 8601 format recommended
+        "timestamp": "2025-03-27T10:30:00Z", # ISO 8601 format recommended
+        "map_needle_id": 123  # Optional integer
     }
     """
     data = request.get_json()
@@ -58,6 +61,15 @@ def update_position():
     user_name = data["name"]
     user_position = data["position"] # Contains {"easting": ..., "northing": ...}
     user_timestamp = data["timestamp"]
+    map_needle_id = data.get("map_needle_id")
+    # Silently discard faulty data (do not insert, do not error)
+    if (
+        user_uuid is None or user_uuid == "" or
+        user_name is None or user_name == "" or
+        user_position.get("easting") == -1 or
+        user_position.get("northing") == -1
+    ):
+        return jsonify({"status": "success", "message": "Position discarded"}), 200
 
     # TODO Optional: Add timestamp validation/parsing if needed
     # try:
@@ -66,11 +78,14 @@ def update_position():
     #     return jsonify({"error": "Invalid timestamp format. Please use ISO 8601 format."}), 400
 
     # Update the in-memory dictionary (overwrites previous entry for the same uuid)
-    team_positions[user_uuid] = {
+    user_entry = {
         "name": user_name,
         "position": user_position,
         "timestamp": user_timestamp
     }
+    if map_needle_id is not None:
+        user_entry["map_needle_id"] = map_needle_id
+    team_positions[user_uuid] = user_entry
 
     print(f"Updated SWEREF position for {user_name} ({user_uuid})") # Optional: Server log
     return jsonify({"status": "success", "message": f"Position updated for {user_uuid}"}), 200
@@ -99,10 +114,29 @@ def get_all_positions():
             "uuid": uuid,
             "name": data["name"],
             "position": data["position"], # Contains {"easting": ..., "northing": ...}
-            "timestamp": data["timestamp"]
+            "timestamp": data["timestamp"],
+            "icon": data.get("icon") if "icon" in data else None
         })
 
     return jsonify(current_positions_list), 200
+
+@bp.route('/positions_test', methods=['GET'])
+def positions_test():
+    """
+    Returns a simulated list of team member positions with slightly randomized coordinates to simulate movement.
+    """
+    base_positions = [
+        {"icon": None, "name": "NiRo", "position": {"easting": 659628.168, "northing": 6352974.603}, "timestamp": int(time.time() * 1000), "uuid": "65a22b7e9b3148a491d85d736b8ad513"},
+        {"icon": None, "name": "Noro", "position": {"easting": 639628.168, "northing": 6351974.603}, "timestamp": int(time.time() * 1000), "uuid": "75a22b7e9b3148a491d85d736b8ad513"},
+        {"icon": None, "name": "Naro", "position": {"easting": 678628.168, "northing": 6352974.603}, "timestamp": int(time.time() * 1000), "uuid": "85a22b7e9b3148a491d85d736b8ad513"}
+    ]
+    # Nudge coordinates by up to ±20 meters and randomize icon
+    for entry in base_positions:
+        entry["position"]["easting"] += random.uniform(-20, 20)
+        entry["position"]["northing"] += random.uniform(-20, 20)
+        entry["timestamp"] = int(time.time() * 1000)
+        entry["icon"] = random.randint(0, 15)
+    return jsonify(base_positions)
 
 @bp.route('/')
 def greeting():
@@ -158,8 +192,27 @@ def upload_img():
 
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    """
+    Checks if a file is allowed based on its extension or if its name
+    starts with 'crashlog'.
+
+    Args:
+        filename (str): The name of the file to check.
+
+    Returns:
+        bool: True if the file is allowed, False otherwise.
+    """
+    # Make the check case-insensitive
+    lower_filename = filename.lower()
+
+    # Condition 1: Check if the filename starts with 'crashlog'
+    is_crash_log = lower_filename.startswith('crashlog')
+
+    # Condition 2: The original check for allowed extensions
+    has_allowed_extension = '.' in lower_filename and \
+                            lower_filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+    return is_crash_log or has_allowed_extension
 
 
 @bp.route("/files",methods=['GET'])
@@ -245,3 +298,4 @@ def delete_all_images():
     except Exception as e:
         logging.error(f"Error deleting all images: {e}")
         return Response("Error deleting images", 500)
+
